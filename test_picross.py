@@ -18,6 +18,11 @@ class Picross:
             ret.append(line[labels==i+1])
         return ret
 
+    def analyse_slices(self,line,key):
+        slices=self.get_slices(line)
+        return slices
+
+
     def fillInColumnZerosWithMinusOne(self,idx):
         zero=self.image[:,idx]==0
         self.image[zero,idx]=-1
@@ -26,42 +31,46 @@ class Picross:
         i=0
         while(i<100):
 
-            for idx,row in enumerate(self.rows):
-                if sum([clue for clue in row])==self.width:
-                    self.image[idx]=1
-                    continue
+            self.solveRows(self.rows)
+            self.solveRows(self.cols,True)
 
-                if self.image[idx,0]==1:
-                    self.image[idx,:row[0]] = 1
-                    if row[0]!=self.width:
-                        self.image[idx,row[0]] = -1
-                #
-                # rowTest=[]
-                # currentNumber=0
-                # for element in self.image[2]:
-                #     if element==1:
-                #         currentNumber+=1
-                #     if element==-1:
-                #         rowTest.append(currentNumber)
-                #         currentNumber=0
-                # print rowTest
-                # for expected,result in zip(self.rows[2],rowTest):
-                #     if expected!=result:
-                #         pass
-
-
-            for idx,col in enumerate(self.cols):
-                if self.image[0,idx]==1:
-                    self.image[:col[0],idx] = 1
-                    if col[0]!=self.width:
-                        self.image[col[0],idx] = -1
-
-                if sum(self.image[:,idx]==1)==sum([clue for clue in col]):
-                    self.fillInColumnZerosWithMinusOne(idx)
 
             i+=1
 
         return self.image
+
+    def solveRows(self,clues,flipped=False):
+        if flipped:
+            image = self.image.swapaxes(0,1)
+        else:
+            image=self.image
+
+        for idx, row in enumerate(clues):
+            if sum([clue for clue in row]) == self.width:
+                image[idx] = 1
+                continue
+
+            if self.image[idx, 0] == 1:
+                self.image[idx, :row[0]] = 1
+                if row[0] != self.width:
+                    self.image[idx, row[0]] = -1
+                    #
+                    # rowTest=[]
+                    # currentNumber=0
+                    # for element in self.image[2]:
+                    #     if element==1:
+                    #         currentNumber+=1
+                    #     if element==-1:
+                    #         rowTest.append(currentNumber)
+                    #         currentNumber=0
+                    # print rowTest
+                    # for expected,result in zip(self.rows[2],rowTest):
+                    #     if expected!=result:
+                    #         pass
+                if flipped:
+                    if sum(self.image[:,idx]==1)==sum([clue for clue in row]):
+                        self.fillInColumnZerosWithMinusOne(idx)
+
 
 class test_picross(unittest.TestCase):
     def show(self,image):
@@ -100,12 +109,14 @@ class test_picross(unittest.TestCase):
 
     def test_third_line_returns_a_set_of_slices(self):
         line=[np.ones(1),np.array((1,1,1,0,1,1)),np.ones(4),np.array((1,1,0,0)),np.ones(1)]
-        print self.Picross.rows[2]
         slices=self.Picross.get_slices(self.picross[2])
         nptest.assert_array_equal(line[0],slices[0])
         nptest.assert_array_equal(line[1],slices[1])
         nptest.assert_array_equal(line[2],slices[2])
         nptest.assert_array_equal(line[3],slices[3])
         nptest.assert_array_equal(line[4],slices[4])
+
+    def test_third_line_fills_in_six(self):
+        nptest.assert_array_equal(np.ones(6),self.Picross.analyse_slices(self.picross[2],self.Picross.rows[2])[1])
 
 
