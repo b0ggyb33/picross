@@ -34,7 +34,6 @@ class Picross:
             self.solveRows(self.rows)
             self.solveRows(self.cols,True)
 
-
             i+=1
 
         return self.image
@@ -43,17 +42,17 @@ class Picross:
         if flipped:
             image = self.image.swapaxes(0,1)
         else:
-            image=self.image
+            image = self.image
 
         for idx, row in enumerate(clues):
             if sum([clue for clue in row]) == self.width:
                 image[idx] = 1
                 continue
 
-            if self.image[idx, 0] == 1:
-                self.image[idx, :row[0]] = 1
+            if image[idx, 0] == 1:
+                image[idx, :row[0]] = 1
                 if row[0] != self.width:
-                    self.image[idx, row[0]] = -1
+                    image[idx, row[0]] = -1
                     #
                     # rowTest=[]
                     # currentNumber=0
@@ -67,9 +66,10 @@ class Picross:
                     # for expected,result in zip(self.rows[2],rowTest):
                     #     if expected!=result:
                     #         pass
-                if flipped:
-                    if sum(self.image[:,idx]==1)==sum([clue for clue in row]):
-                        self.fillInColumnZerosWithMinusOne(idx)
+
+            if sum(image[idx]==1)==sum([clue for clue in row]):
+                self.fillInColumnZerosWithMinusOne(idx)
+
 
 
 class test_picross(unittest.TestCase):
